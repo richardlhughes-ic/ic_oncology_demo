@@ -1,0 +1,94 @@
+--List of Integra Connect Sample Queries
+
+--==================================================================================
+--  Use Case: Introduction to the tables
+--==================================================================================
+
+select * from "PROD_SNOWFLAKE_DEMO"."OMOP"."CONDITION_OCCURRENCE";
+
+select * from "PROD_SNOWFLAKE_DEMO"."OMOP"."COST";
+
+select * from "PROD_SNOWFLAKE_DEMO"."OMOP"."DRUG_EXPOSURE";
+
+select * from "PROD_SNOWFLAKE_DEMO"."OMOP"."MEASUREMENT";
+
+select * from "PROD_SNOWFLAKE_DEMO"."OMOP"."PERSON";
+
+select * from "PROD_SNOWFLAKE_DEMO"."OMOP"."PROCEDURE_OCCURRENCE";
+
+select * from "PROD_SNOWFLAKE_DEMO"."OMOP"."PROVIDER";
+
+select * from "PROD_SNOWFLAKE_DEMO"."OMOP"."VISIT_OCCURRENCE";
+
+--==================================================================================
+--  Use Case: List all patients by Major and Minor Cancer Diagnosis, 
+--  Start and End Dates, and with Major and Minor Diagnosis Descriptions
+--==================================================================================
+
+select * from "PROD_SNOWFLAKE_DEMO"."OMOP"."CONDITION_OCCURRENCE"
+order by person_id,condition_start_date, condition_source_value; 
+
+--==================================================================================
+--  Use Case: List All Patients with particular major diagnosis code (C50 Breast Cancer,
+--  C34 Lung Cancer)
+--==================================================================================
+
+select distinct(person_id), condition_source_value_category 
+from OMOP.CONDITION_OCCURRENCE
+where CONDITION_SOURCE_VALUE_CATEGORY = 'C50' 
+order by person_id;
+
+select distinct(person_id) 
+from OMOP.CONDITION_OCCURRENCE
+where CONDITION_SOURCE_VALUE_CATEGORY = 'C34';
+
+--==================================================================================
+--  Use Case: List all the cancer types by major category
+--==================================================================================
+
+select CONDITION_SOURCE_VALUE_CATEGORY, count(*) as CNT
+from  OMOP.CONDITION_OCCURRENCE
+group by CONDITION_SOURCE_VALUE_CATEGORY
+order by CNT desc;
+
+--==================================================================================
+--  Use Case: List all charges and payments by cost id
+--==================================================================================
+
+select * 
+from OMOP.COST
+order by cost_id;
+
+--==================================================================================
+--  Use Case: List the counts of all the lab measurements
+--==================================================================================
+
+select MEASUREMENT_SOURCE_VALUE, count(*) as CNT
+from OMOP.MEASUREMENT
+group by MEASUREMENT_SOURCE_VALUE
+order by CNT desc;
+
+--==================================================================================
+--  Use Case: List the counts of all visits types by patient
+--==================================================================================
+
+select PERSON_ID, VISIT_SOURCE_VALUE, count(*) as CNT
+from OMOP.VISIT_OCCURRENCE
+group by PERSON_ID, VISIT_SOURCE_VALUE
+order by PERSON_ID;
+
+-- ===================================================================================
+--  Use Case:  What Drugs have been administered to Patients with Breast Cancer and when?
+--====================================================================================
+
+select
+distinct(p.person_id), p.gender_source_value, m.condition_description, 
+l.drug_exposure_start_date, l.provider_id, l.drug_source_value, l.ndc, l.rxnorm_id
+from OMOP.PERSON p
+join OMOP.DRUG_EXPOSURE l
+on  p.person_id = l.person_id
+join OMOP.CONDITION_OCCURRENCE m 
+on l.person_id = m.person_id
+and m.condition_source_value_category = 'C50'
+order by
+p.person_id, l.drug_exposure_start_date;
