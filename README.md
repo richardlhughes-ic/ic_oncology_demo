@@ -50,8 +50,8 @@ There are many terms and codes used in the database too numerous to list here bu
   -procedure_source_code_name
   
   -measurement_concept_id
-
-
+  
+### **_[Example Queries](IntegraConnect_SQL_Queries.txt)_**
 
 Additional sources of information on OMOP, the dataset, and codes used include
 
